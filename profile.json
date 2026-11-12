@@ -1,0 +1,12 @@
+{
+  "layout": "win98-plus",
+  "artifact": "Herdr-98-Custom",
+  "mods": [
+    "win98-plus",
+    "menu-files",
+    "terminals-pane-files",
+    "wsl-clipboard",
+    "session-restore",
+    "sync-panes"
+  ]
+}
