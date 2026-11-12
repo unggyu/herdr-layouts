@@ -1,0 +1,12 @@
+{
+  "layout": "tabs",
+  "artifact": "Herdr-Terminals-Custom",
+  "mods": [
+    "terminals-bar-movable",
+    "menu-files",
+    "terminals-pane-files",
+    "wsl-clipboard",
+    "session-restore",
+    "sync-panes"
+  ]
+}
