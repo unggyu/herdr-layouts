@@ -1,0 +1,11 @@
+* text=auto
+*.py text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.cmd text eol=crlf
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.png binary
+*.wav binary
