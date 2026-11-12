@@ -1,0 +1,8 @@
+{
+  "place": "none",
+  "title": "Terminals pane header",
+  "cloned_from": {
+    "name": "terminals-pane",
+    "version": "0.1.13"
+  }
+}

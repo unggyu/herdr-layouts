@@ -1,0 +1,12 @@
+build/
+dist/
+.cache/
+__pycache__/
+*.py[cod]
+*.error
+*.log
+*.lock
+*.backup-*
+payload/mods/*/data/
+original-shell.json
+core-config.before.toml
