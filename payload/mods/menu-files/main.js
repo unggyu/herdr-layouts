@@ -34,6 +34,7 @@ function items(p, git) {
       const toProgram = term?.labels?.["herdr.right-click"] === "program";
       return [
         ...(tg.terminal ? [[`터미널 ID 복사: ${tg.terminal}`, "terminal.copy_id", { terminal: tg.terminal }]] : []),
+        ["대화 이력·복구", "session.history", { terminal: tg.terminal }],
         ["기본 앱으로 열기", "file.open", { terminal: tg.terminal }],
         ["파일 탐색기에서 보기", "file.reveal", { terminal: tg.terminal }],
         ["Split right", "pane.split", { direction: "right", pane: tg.pane }],
@@ -110,6 +111,7 @@ export default class Menu extends View {
     if (!it) return;
     closeOverlay(props()?.overlay);
     if (it[1] === "terminal.copy_id") run("wsl-clipboard.copy-id:" + it[2].terminal);
+    else if (it[1] === "session.history") openOverlay({mod:"session-history",kind:"dialog",width:1000,height:680,props:it[2]});
     else if (it[1] === "file.open") run("wsl-clipboard.open:" + it[2].terminal);
     else if (it[1] === "file.reveal") run("wsl-clipboard.reveal:" + it[2].terminal);
     else if (it[1] === "worktree") openOverlay({ mod: "worktree", kind: "dialog", ...(it[2].action === "open" ? { width: 560, height: 480 } : { width: 440, height: 260 }), props: it[2] });

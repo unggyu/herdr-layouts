@@ -58,10 +58,14 @@ def install(args):
             text = source.read_text(encoding='utf-8')
             for token, value in replacements.items():text = text.replace(token, value)
             dest.write_text(text, encoding='utf-8')
-        else: shutil.copy2(source, dest)
+        elif not dest.exists() or hashlib.sha256(source.read_bytes()).digest() != hashlib.sha256(dest.read_bytes()).digest():
+            shutil.copy2(source, dest)
     runtime.mkdir(parents=True, exist_ok=True)
     for source in (ROOT/'runtime').iterdir():
-        if source.is_file(): shutil.copy2(source, runtime/source.name)
+        if source.is_file():
+            dest = runtime/source.name
+            if not dest.exists() or hashlib.sha256(source.read_bytes()).digest() != hashlib.sha256(dest.read_bytes()).digest():
+                shutil.copy2(source, dest)
     save_existing(keys_path, Path('keys.json'))
     keys_path.write_text(json.dumps(keys, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     # A new computer starts with its own empty session registry, never this PC's chats.

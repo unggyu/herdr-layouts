@@ -32,7 +32,7 @@
             "pane": {
               "header": {
                 "content": {
-                  "mod": "win98",
+                  "mod": "win98-plus",
                   "props": {
                     "role": "window"
                   }

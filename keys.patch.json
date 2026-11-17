@@ -81,6 +81,7 @@
     "ctrl-shift-alt-right": "win98-plus.move-right",
     "ctrl-v": "wsl-clipboard.paste",
     "ctrl-shift-v": "wsl-clipboard.paste",
-    "ctrl-shift-f12": "wsl-clipboard.reveal"
+    "ctrl-shift-f12": "wsl-clipboard.reveal",
+    "ctrl-shift-r": "mod.open:session-history"
   }
 }
