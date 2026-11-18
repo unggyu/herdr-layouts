@@ -6,23 +6,20 @@ from pathlib import Path
 import sys
 
 
-def build_argv(record):
-    result = [record["codex"], *record.get("options", [])]
-    if record.get("session_id"):
-        result.extend(["resume", record["session_id"]])
-    elif record.get("evidence") == "resume-picker":
-        result.append("resume")
-    elif record.get("evidence") == "fresh-cli":
-        pass
-    else:
-        raise ValueError("No verified Codex conversation is saved")
-    return result
-
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from options import build_argv
 
 def main():
     state_path, terminal = sys.argv[1:3]
+    entry = sys.argv[3] if len(sys.argv)>3 else None
     record = json.loads(Path(state_path).read_text())["records"][terminal]
-    if not record.get("armed"):
+    if entry:
+        import sqlite3
+        with sqlite3.connect(str(Path(state_path).parent/'history.sqlite')) as db:
+            row=db.execute('SELECT terminal,record FROM entries WHERE id=?',(entry,)).fetchone()
+        if not row or row[0]!=terminal: raise ValueError('Pane mismatch')
+        record=json.loads(row[1])
+    if not entry and not record.get("armed"):
         raise ValueError("This terminal was intentionally left or closed")
     if not Path(record["cwd"]).is_dir():
         raise ValueError("The saved working directory no longer exists")

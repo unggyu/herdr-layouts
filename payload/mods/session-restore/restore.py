@@ -9,14 +9,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from service import DATA, ROOT, STATE, WSL, read_state, win_to_wsl
 
 
-def wsl_command(record, terminal):
+def wsl_command(record, terminal, entry=None):
     return [str(WSL), "-d", record["distro"], "-u", record["user"], "--cd", record["cwd"],
-            "--exec", "/usr/bin/python3", win_to_wsl(ROOT / "launch.py"), win_to_wsl(STATE), terminal]
+            "--exec", "/usr/bin/python3", win_to_wsl(ROOT / "launch.py"), win_to_wsl(STATE), terminal] + ([entry] if entry else [])
 
 
-def restore(terminal):
+def restore(terminal, entry=None):
     record = read_state()["records"].get(terminal)
-    if not record or not record.get("armed"):
+    if entry:
+        from history import lookup
+        target, record = lookup(entry)
+        if target != terminal: raise ValueError('Pane mismatch')
+    if not record or (not entry and not record.get("armed")):
         return False
     import msvcrt
     DATA.mkdir(parents=True, exist_ok=True)
@@ -27,7 +31,7 @@ def restore(terminal):
         except OSError:
             return False
         print("[Herdr] Restoring saved Codex conversation...", flush=True)
-        subprocess.call(wsl_command(record, terminal))
+        subprocess.call(wsl_command(record, terminal, entry))
     return True
 
 
@@ -35,6 +39,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", default=os.environ.get("HC_TERMINAL_ID"))
     parser.add_argument("--shell", action="store_true")
+    parser.add_argument("--entry")
     args = parser.parse_args()
     if args.shell and os.environ.get('HC_SESSION', 'default') == 'default' and not os.environ.get('HERDR_RECOVERY_DATA'):
         # Also start tracking when a built-in layout, rather than our personal
@@ -44,7 +49,8 @@ def main():
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
     if args.terminal and (os.environ.get("HC_SESSION", "default") == "default" or os.environ.get("HERDR_RECOVERY_DATA")):
-        restore(args.terminal)
+        if not args.shell and args.entry:
+            restore(args.terminal, args.entry)
     if args.shell:
         original = json.loads((ROOT / "original-shell.json").read_text(encoding="utf-8"))
         # Inherit this terminal's cwd and refreshed environment as Herdr does.

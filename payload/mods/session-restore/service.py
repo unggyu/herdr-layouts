@@ -13,6 +13,7 @@ import threading
 import time
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 DATA = Path(os.environ.get("HERDR_RECOVERY_DATA", ROOT / "data"))
 STATE = DATA / "sessions.json"
 HC = Path(os.environ.get("LOCALAPPDATA", "")) / "Programs/herdr-core/hc.exe"
@@ -108,12 +109,14 @@ def should_restore(record, boot, terminal, current_panes):
     return bool(re.search(r"(?:^|\n)PS [^\r\n>]+>\s*$", screen))
 
 
-def send_restore(terminal):
+def send_restore(terminal, entry=None):
     """A verified empty shell prompt only; never send a Codex task or message."""
     spec = importlib.util.spec_from_file_location("recovery_input", ROOT / "terminal_input.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     command = "& '" + str(Path(sys.executable)).replace("'", "''") + "' -I '" + str(ROOT / "restore.py").replace("'", "''") + "' --terminal " + terminal
+    if entry:
+        command += " --entry " + entry
     connection = module.Conn()
     try:
         module.type_into(connection, terminal, [{"text": command}, {"key": "enter", "mods": 0}], time.time() + 25)
@@ -121,7 +124,7 @@ def send_restore(terminal):
         connection.p.stdin.close()
 
 
-def tick(recover=True):
+def tick(recover=False):
     state = read_state()
     terminals = terminal_info()
     by_id = {t["address"]: t for t in terminals}
@@ -136,6 +139,8 @@ def tick(recover=True):
             terminal = by_id[record["terminal"]]
             if record["session_id"] or record["evidence"] in ("resume-picker", "fresh-cli"):
                 record.update(armed=True, saved_at=time.time(), labels=terminal.get("labels", {}))
+                from history import save
+                save(record["terminal"], record.get("title"), record)
                 state["records"][record["terminal"]] = record
                 # Core metadata, not keystrokes: expose the verified identity on
                 # its actual pane and persist it with Herdr's own terminal state.
@@ -217,6 +222,8 @@ def watch():
                         if titles.get(address) == title:
                             continue  # spinner frames aren't session changes
                         titles[address] = title
+                        from history import save
+                        if address: save(address, title)
                     if kind in ('title', 'turn', 'created', 'restarted', 'lost', 'finished', 'removed'):
                         dirty.set()
                     if stopped.is_set():
@@ -226,12 +233,6 @@ def watch():
             if not stopped.is_set():
                 stopped.wait(5)
     threading.Thread(target=changes, daemon=True).start()
-    # Opening Herdr is the user's signal to wake previously saved distributions.
-    for distro in {r["distro"] for r in read_state()["records"].values() if r.get("armed")}:
-        try:
-            execute([WSL, "-d", distro, "--exec", "/bin/true"], timeout=30)
-        except Exception as error:
-            log(f"WSL startup failed: {type(error).__name__}")
     while True:
         try:
             execute([APP, "status"], timeout=10)
@@ -242,7 +243,7 @@ def watch():
                 event_process[0].terminate()
             return
         try:
-            result = tick()
+            result = tick(recover=False)
             if result["unresolved"]:
                 log("Unresolved panes: " + ",".join(r["terminal"] for r in result["unresolved"]))
         except Exception as error:

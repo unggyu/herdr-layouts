@@ -7,6 +7,7 @@
     "terminals-pane-files",
     "wsl-clipboard",
     "session-restore",
-    "sync-panes"
+    "sync-panes",
+    "session-history"
   ]
 }
