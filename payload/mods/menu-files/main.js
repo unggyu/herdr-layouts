@@ -34,8 +34,8 @@ function items(p, git) {
       const toProgram = term?.labels?.["herdr.right-click"] === "program";
       return [
         ...(tg.terminal ? [[`터미널 ID 복사: ${tg.terminal}`, "terminal.copy_id", { terminal: tg.terminal }]] : []),
-        ["대화 이력·복구", "session.history", { terminal: tg.terminal }],
         ["기본 앱으로 열기", "file.open", { terminal: tg.terminal }],
+        ["대화 이력·복구", "session.history", { terminal: tg.terminal }],
         ["파일 탐색기에서 보기", "file.reveal", { terminal: tg.terminal }],
         ["Split right", "pane.split", { direction: "right", pane: tg.pane }],
         ["Split down", "pane.split", { direction: "down", pane: tg.pane }],

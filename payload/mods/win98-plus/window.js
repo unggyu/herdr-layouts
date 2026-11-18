@@ -29,8 +29,8 @@ export default class PaneWindow {
       openMenu([
         ...(p?.terminal ? [
           { label: `터미널 ID 복사: ${p.terminal}`, act: { run: ["wsl-clipboard.copy-id:" + p.terminal, {}] } },
-          { label: "대화 이력·복구", act: { run: ["session-restore.history:" + p.terminal, {}] } },
           { label: "기본 앱으로 열기", act: { run: ["wsl-clipboard.open:" + p.terminal, {}] } },
+          { label: "대화 이력·복구", act: { run: ["session-restore.history:" + p.terminal, {}] } },
           { label: "파일 탐색기에서 보기", act: { run: ["wsl-clipboard.reveal:" + p.terminal, {}] } },
           { sep: true },
         ] : []),
